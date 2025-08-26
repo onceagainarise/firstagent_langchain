@@ -2,8 +2,9 @@ import os
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_community.tools import DuckDuckGoSearchRun
-from langchain.agents import create_react_agent, AgentExecutor
+from langchain.agents import create_react_agent, AgentExecutor, load_tools
 from langchain import hub
+import arxiv
 
 # Load API key
 load_dotenv()
@@ -17,24 +18,23 @@ llm = ChatGroq(
 )
 
 # Tool setup
-search = DuckDuckGoSearchRun()
-
+research_tool = load_tools(["arxiv"])
 # Prompt for ReAct agent
 prompt = hub.pull("hwchase17/react")
 
 # Agent creation
-agent = create_react_agent(llm=llm, tools=[search], prompt=prompt)
+agent = create_react_agent(llm=llm, tools=research_tool, prompt=prompt)
 
 # Agent executor
 agent_executor = AgentExecutor(
     agent=agent,
-    tools=[search],
+    tools=research_tool,
     verbose=True,
     handle_parsing_errors=True
 )
 
 # Run agent
 response = agent_executor.invoke(
-    {"input": "what is today's date in India and time in New Delhi?"}
+    {"input": "what is the paper 'Self-Adapting Language Models' about?"}
 )
 print(response)
